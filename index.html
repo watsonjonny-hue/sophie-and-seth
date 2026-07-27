@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Job Tracker</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #faf9f7;
+    color: #2b2620;
+    padding: 0 0 64px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  .tabbar {
+    background: #fff;
+    border-bottom: 1px solid #eae4d6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .tabbar-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    gap: 4px;
+    padding: 14px 24px 0;
+  }
+  .tab-btn {
+    appearance: none;
+    border: 1px solid #eae4d6;
+    border-bottom: none;
+    background: #f4f1ea;
+    color: #7a7266;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: #fff;
+    color: #2b2620;
+    border-color: #eae4d6;
+  }
+  .tab-btn:not(.active):hover { background: #eee8db; }
+  header { margin: 28px 0; }
+  h1 { font-size: 26px; margin: 0 0 6px; font-weight: 650; }
+  .sub { color: #7a7266; font-size: 14px; }
+  .updated {
+    display: inline-block;
+    margin-top: 10px;
+    background: #f1ece1;
+    color: #6b5f3f;
+    font-size: 12.5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+  section { margin-bottom: 36px; }
+  h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8a5a2b;
+    border-bottom: 1px solid #e7e0d3;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .panel-seth h2 { color: #3f6b3f; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #eae4d6;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .card h3 { font-size: 15px; margin: 0 0 4px; }
+  .card .meta { font-size: 12.5px; color: #8a8172; margin-bottom: 8px; }
+  .card p { font-size: 13.5px; color: #4a443b; margin: 0 0 10px; line-height: 1.45; }
+  .card a.btn {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8a5a2b;
+    text-decoration: none;
+    border: 1px solid #d9c7a8;
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+  .card a.btn:hover { background: #f6ede0; }
+  .panel-seth .card a.btn { color: #3f6b3f; border-color: #c3d6b8; }
+  .panel-seth .card a.btn:hover { background: #eef4e9; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7a4f;
+    background: #eef2e4;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+  }
+  .link-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .link-list a {
+    font-size: 13px;
+    color: #3b3630;
+    background: #fff;
+    border: 1px solid #eae4d6;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-decoration: none;
+  }
+  .link-list a:hover { border-color: #d9c7a8; background: #fbf7ef; }
+  .link-list a .domain { display: block; font-size: 11px; color: #a39a89; margin-top: 2px; }
+  .note {
+    font-size: 13px;
+    color: #7a7266;
+    background: #f4f1ea;
+    border-left: 3px solid #d9c7a8;
+    padding: 10px 14px;
+    border-radius: 4px;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .tailor-form label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #6b5f3f;
+    margin: 12px 0 4px;
+  }
+  .tailor-form input[type="text"],
+  .tailor-form input[type="url"],
+  .tailor-form textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 8px 10px;
+    border: 1px solid #d9c7a8;
+    border-radius: 6px;
+    background: #fff;
+    color: #2b2620;
+    box-sizing: border-box;
+  }
+  .tailor-form textarea { min-height: 110px; resize: vertical; }
+  .tailor-form .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .tailor-form .row > div { flex: 1 1 220px; }
+  .tailor-form button {
+    margin-top: 16px;
+    background: #8a5a2b;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .tailor-form button:hover { background: #74491f; }
+  .tailor-form button:disabled { background: #c9b89a; cursor: default; }
+  .tailor-result {
+    margin-top: 18px;
+    background: #fff;
+    border: 1px solid #eae4d6;
+    border-radius: 10px;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+  }
+  .tailor-status { margin-top: 10px; font-size: 13px; color: #7a7266; display: none; }
+  .tailor-status.error { color: #a3312a; }
+  .tailor-copy-btn {
+    margin-top: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #8a5a2b;
+    background: #fff;
+    border: 1px solid #d9c7a8;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab-btn active" id="tab-btn-sophie" onclick="showPanel('sophie')">Sophie — Fashion &amp; Retail</button>
+    <button class="tab-btn" id="tab-btn-seth" onclick="showPanel('seth')">Seth — Countryside &amp; Rural Careers</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= SOPHIE PANEL ================= -->
+  <div class="panel active panel-sophie" id="panel-sophie">
+    <header>
+      <h1>Fashion &amp; Retail Job Tracker — Sophie</h1>
+      <div class="sub">Broad sweep across fashion, retail, PR and marketing — buying, brand marketing, showroom, styling/content, e-commerce, retail management and more. UK, Europe &amp; international. Casting a wide net deliberately — Ella's better placed than a filter to judge what's appealing.</div>
+      <div class="updated">Last updated: 26 July 2026</div>
+    </header>
+
+    <section>
+      <h2>Profile snapshot</h2>
+      <div class="card" style="max-width:640px;">
+        <p style="margin-bottom:8px;"><strong>BA Fashion Marketing, First Class Honours</strong> — Leeds Beckett University (2023–2026)</p>
+        <p style="margin-bottom:8px;">Relevant experience: <strong>Fashion Week PR Intern</strong> at Lobby PR, London (runway show support, press releases, front of house) and a Paris market-week internship at Arddun Agency. Also Student &amp; Course Ambassador at Leeds Beckett.</p>
+        <p style="margin:0;">Focus areas: broad — <strong>buying/merchandising</strong>, <strong>PR &amp; brand marketing</strong> (in-house and agency), <strong>showroom</strong>, styling/content, e-commerce and retail management. Deliberately not pre-filtered to "entry-level only" or a narrow category list — better to surface a wide range and let her pick what's appealing.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tailor Ella's CV to a role</h2>
+      <p class="note" style="margin-bottom:14px;">Paste in a job description below and get a CV tailored to it in a few seconds — nothing is invented, it only reorders and re-emphasises what's genuinely on Ella's CV to match the role.</p>
+      <form class="tailor-form" id="tailor-form-sophie" onsubmit="submitTailorForm(event, 'sophie')">
+        <div class="row">
+          <div>
+            <label for="tf-sophie-role">Job title</label>
+            <input type="text" id="tf-sophie-role" placeholder="e.g. PR Assistant">
+          </div>
+          <div>
+            <label for="tf-sophie-company">Company</label>
+            <input type="text" id="tf-sophie-company" placeholder="e.g. Karla Otto">
+          </div>
+        </div>
+        <label for="tf-sophie-link">Job listing link (optional)</label>
+        <input type="url" id="tf-sophie-link" placeholder="https://...">
+        <label for="tf-sophie-jd">Job description (paste the full text — the more detail, the better the result)</label>
+        <textarea id="tf-sophie-jd" required placeholder="Paste the job description here..."></textarea>
+        <label for="tf-sophie-notes">Anything else to emphasise? (optional)</label>
+        <textarea id="tf-sophie-notes" style="min-height:60px;" placeholder="e.g. 'focus on the PR experience, not showroom'"></textarea>
+        <button type="submit" id="tf-sophie-submit">Tailor CV</button>
+      </form>
+      <div class="tailor-status" id="tf-sophie-status"></div>
+      <div class="tailor-result" id="tf-sophie-result"></div>
+      <button class="tailor-copy-btn" id="tf-sophie-copy" onclick="copyTailorResult('sophie')">Copy to clipboard</button>
+    </section>
+
+    <section>
+      <h2>Live opportunities spotted today</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag">Buying · Luxury Retail</span>
+          <h3>Harrods — Buying Assistant (various departments)</h3>
+          <div class="meta">London, UK · Entry level</div>
+          <p>Buying Assistant across departments incl. Arcade &amp; Seasonal, Furniture, Fine Watches — supports product selection, trend analysis, order management.</p>
+          <a class="btn" href="https://www.fashionworkie.com/job/buying-assistant-various-departments-0" target="_blank">View listing →</a>
+        </div>
+        <div class="card">
+          <span class="tag">Brand Marketing · Beauty/Fashion</span>
+          <h3>L'Oréal — Marketing Management Trainee Programme</h3>
+          <div class="meta">White City, London · 18 months · ~£35,000</div>
+          <p>Rotational graduate trainee scheme for final-year students (2026 grads) or recent graduates within 2 years. Starts July 2026 or Jan 2027.</p>
+          <a class="btn" href="https://uk.prosple.com/fashion-marketing-graduate-jobs-uk" target="_blank">Find via Prosple →</a>
+        </div>
+        <div class="card">
+          <span class="tag">PR · Beauty/Fashion</span>
+          <h3>Coty — PR &amp; Communications Intern</h3>
+          <div class="meta">London SW19 · 13-month internship · Starts July 2026</div>
+          <p>PR &amp; Communications internship at global beauty group Coty (Gucci, Chloé, Calvin Klein, Burberry fragrance licences, Marc Jacobs, Rimmel).</p>
+          <a class="btn" href="https://careers.coty.com/job/London-PR-and-Communications-Intern-LND-SW19-4DR/1374702433/" target="_blank">View listing →</a>
+        </div>
+        <div class="card">
+          <span class="tag">PR/Marketing · Luxury Brand</span>
+          <h3>AADNEVIK — Junior PR &amp; Marketing Position</h3>
+          <div class="meta">Greater London · Full time, immediate start</div>
+          <p>Junior PR/Marketing role at independent luxury womenswear label — press &amp; media relations, celebrity/stylist outreach, social monitoring.</p>
+          <a class="btn" href="https://www.fashionworkie.com/job/pr-marketing-junior" target="_blank">View listing →</a>
+        </div>
+      </div>
+      <p class="note" style="margin-top:14px;">These were live as of today's search — always confirm the listing is still open before applying.</p>
+    </section>
+
+    <section>
+      <h2>Career pages to watch directly</h2>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">High street &amp; online retail</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.asoscareers.com/job-search" target="_blank">ASOS<span class="domain">asoscareers.com</span></a>
+        <a href="https://careers.next.co.uk/" target="_blank">Next<span class="domain">careers.next.co.uk</span></a>
+        <a href="https://careers.boohoogroup.com/jobs/boohoo-jobs" target="_blank">boohoo group<span class="domain">careers.boohoogroup.com</span></a>
+        <a href="https://jobs.marksandspencer.com/" target="_blank">M&amp;S<span class="domain">jobs.marksandspencer.com</span></a>
+        <a href="https://career.hm.com/gb-en/" target="_blank">H&amp;M Group<span class="domain">career.hm.com</span></a>
+        <a href="https://www.inditexcareers.com/portalweb/en/" target="_blank">Inditex (Zara etc.)<span class="domain">inditexcareers.com</span></a>
+        <a href="https://careers.riverisland.com/" target="_blank">River Island<span class="domain">careers.riverisland.com</span></a>
+        <a href="https://careers.superdry.com/" target="_blank">Superdry<span class="domain">careers.superdry.com</span></a>
+        <a href="https://www.newlookgroup.com/careers" target="_blank">New Look<span class="domain">newlookgroup.com/careers</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Contemporary &amp; premium British brands</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://burberrycareers.com/" target="_blank">Burberry<span class="domain">burberrycareers.com</span></a>
+        <a href="https://www.mulberry.com/gb/information/job-listings" target="_blank">Mulberry<span class="domain">mulberry.com</span></a>
+        <a href="https://careers.allsaints.com/" target="_blank">AllSaints<span class="domain">careers.allsaints.com</span></a>
+        <a href="https://tedbaker.simplify.hr/" target="_blank">Ted Baker<span class="domain">tedbaker.simplify.hr</span></a>
+        <a href="https://uk.fashionjobs.com/careers/reiss.html" target="_blank">Reiss (via FashionJobs)<span class="domain">uk.fashionjobs.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Department stores &amp; luxury</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.selfridges.com/GB/en/info/careers/" target="_blank">Selfridges<span class="domain">selfridges.com/careers</span></a>
+        <a href="https://www.jlpjobs.com/" target="_blank">John Lewis Partnership<span class="domain">jlpjobs.com</span></a>
+        <a href="https://www.lvmh.com/join-us/our-job-offers" target="_blank">LVMH<span class="domain">lvmh.com/join-us</span></a>
+        <a href="https://www.harrods.com/en-gb/careers" target="_blank">Harrods<span class="domain">harrods.com/careers</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Online-only &amp; marketplace retailers</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://farfetchcareers.com/" target="_blank">Farfetch<span class="domain">farfetchcareers.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">General fashion &amp; buying aggregators</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.businessoffashion.com/careers/jobs/" target="_blank">BoF Careers — All<span class="domain">businessoffashion.com</span></a>
+        <a href="https://www.fashionworkie.com" target="_blank">FashionWorkie<span class="domain">fashionworkie.com</span></a>
+        <a href="https://www.drapersjobs.com/jobs/buyer" target="_blank">Drapers Jobs — Buyer<span class="domain">drapersjobs.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">PR &amp; marketing agencies (matches her Lobby PR experience)</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://careers.karlaotto.com/jobs" target="_blank">Karla Otto<span class="domain">careers.karlaotto.com</span></a>
+        <a href="https://www.kcdworldwide.com/" target="_blank">KCD<span class="domain">kcdworldwide.com</span></a>
+        <a href="https://www.indeed.com/cmp/Villa-Eugenie-1" target="_blank">Villa Eugénie<span class="domain">via Indeed</span></a>
+        <a href="https://www.businessoffashion.com/careers/jobs/pr-and-communications/permanent/" target="_blank">BoF Careers — PR &amp; Comms<span class="domain">businessoffashion.com</span></a>
+        <a href="https://detaillondon.com/jobs/" target="_blank">Detail London (fashion/beauty PR recruiter)<span class="domain">detaillondon.com</span></a>
+        <a href="https://www.linkedin.com/jobs/search/?keywords=fashion%20PR%20assistant%20marketing" target="_blank">LinkedIn Jobs — PR/marketing assistant search<span class="domain">linkedin.com/jobs</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Fashion &amp; retail specialist recruiters</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.fashionpersonnel.co.uk/jobseekers/fashion-job-search" target="_blank">Fashion Personnel<span class="domain">fashionpersonnel.co.uk</span></a>
+        <a href="https://www.fsrl.co.uk/fashion-retail-marketing-and-digital-jobs" target="_blank">FSRL — Marketing &amp; Digital<span class="domain">fsrl.co.uk</span></a>
+        <a href="https://uk.fashionjobs.com/s/jobsinfashion/beauty.html" target="_blank">FashionJobs.com — Beauty<span class="domain">uk.fashionjobs.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Broader sweep — graduate schemes, styling/content, retail management</h3>
+      <div class="link-list">
+        <a href="https://www.brightnetwork.co.uk/graduate-jobs/retail-fashion/" target="_blank">Bright Network — Retail &amp; Fashion grad jobs<span class="domain">brightnetwork.co.uk</span></a>
+        <a href="https://www.businessoffashion.com/careers/jobs/london-central-/entry-level-assistant/full-time/" target="_blank">BoF Careers — Entry-Level/Assistant, London<span class="domain">businessoffashion.com</span></a>
+        <a href="https://uk.indeed.com/q-fashion-social-media-l-london-jobs.html" target="_blank">Indeed UK — Fashion Social Media, London<span class="domain">uk.indeed.com</span></a>
+        <a href="https://uk.indeed.com/q-fashion-stylist-assistant-jobs.html" target="_blank">Indeed UK — Stylist Assistant<span class="domain">uk.indeed.com</span></a>
+        <a href="https://www.prospects.ac.uk/jobs-and-work-experience/job-sectors/retail/retail-graduate-schemes/" target="_blank">Prospects — Retail graduate schemes<span class="domain">prospects.ac.uk</span></a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Job boards &amp; graduate schemes</h2>
+      <div class="link-list">
+        <a href="https://uk.prosple.com/fashion-marketing-graduate-jobs-uk" target="_blank">Prosple<span class="domain">Fashion marketing grad jobs</span></a>
+        <a href="https://www.milkround.com/jobs/fashion-marketing" target="_blank">Milkround<span class="domain">Fashion marketing jobs</span></a>
+        <a href="https://the-dots.com/jobs/search/fashion-graduate-jobs" target="_blank">The Dots<span class="domain">Fashion graduate jobs</span></a>
+        <a href="https://giveagradago.com/graduate-jobs/graduate-jobs-in-fashion/" target="_blank">Give a Grad a Go<span class="domain">Graduate jobs in fashion</span></a>
+        <a href="https://uk.indeed.com/q-entry-level-fashion-marketing-jobs.html" target="_blank">Indeed UK<span class="domain">Entry-level fashion marketing</span></a>
+        <a href="https://www.glassdoor.co.uk/Job/london-fashion-marketing-jobs-SRCH_IL.0,6_IC2671300_KO7,24.htm" target="_blank">Glassdoor UK<span class="domain">Fashion marketing, London</span></a>
+      </div>
+    </section>
+
+    <section>
+      <p class="note">This page refreshes daily — it casts a deliberately wide net across the career pages and job boards above (buying, PR/marketing, showroom, styling/content, e-commerce, retail management, and more) across the UK, Europe and beyond, rather than pre-filtering to a narrow category or experience level, and updates the "live opportunities" list.</p>
+    </section>
+  </div>
+
+  <!-- ================= SETH PANEL ================= -->
+  <div class="panel panel-seth" id="panel-seth">
+    <header>
+      <h1>Countryside &amp; Rural Careers Job Tracker — Seth</h1>
+      <div class="sub">Grounds/shoot management, rural land agency, and agronomy roles — focused on the Nottingham / Derby / Leicester triangle, roughly a 45-minute drive of Shepshed (just off the M1).</div>
+      <div class="updated">Last updated: 26 July 2026</div>
+    </header>
+
+    <section>
+      <h2>Profile snapshot</h2>
+      <div class="card" style="max-width:640px;">
+        <p style="margin-bottom:8px;">BSc Agriculture graduate, age 28, based in Shepshed, Leicestershire. Currently <strong>Head Groundsman &amp; shoot host</strong> at a stately home in the East Midlands — grounds upkeep, event/wedding structures, and hosting estate shoots (guest welcome, safety briefings, accompanying guns). Previously an <strong>Agricultural Liaison Officer</strong> on a major infrastructure project, managing landowner relations and land access, and before that hands-on arable farm work (combine driving, crop spraying, drilling) plus seasonal underkeeping and game-rearing experience.</p>
+        <p style="margin:0;">Focus areas: <strong>grounds/estate &amp; shoot management</strong>, <strong>rural land agency</strong> (Agricultural Liaison Officer, assistant land agent/rural surveyor), and <strong>junior/trainee agronomist</strong> roles (PA1, PA2, PA6A certified). <strong>Geographic scope narrowed to the Nottingham–Derby–Leicester triangle</strong> — roughly a 45-minute commute of Shepshed (LE12), just off the M1. Roles further afield are only worth surfacing if genuinely exceptional.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tailor Max's CV to a role</h2>
+      <p class="note" style="margin-bottom:14px;">Paste in a job description below and get a CV tailored to it in a few seconds — nothing is invented, it only reorders and re-emphasises what's genuinely on Max's CV to match the role.</p>
+      <form class="tailor-form" id="tailor-form-seth" onsubmit="submitTailorForm(event, 'seth')">
+        <div class="row">
+          <div>
+            <label for="tf-seth-role">Job title</label>
+            <input type="text" id="tf-seth-role" placeholder="e.g. Head Groundsman">
+          </div>
+          <div>
+            <label for="tf-seth-company">Company / Estate</label>
+            <input type="text" id="tf-seth-company" placeholder="e.g. Belvoir Castle">
+          </div>
+        </div>
+        <label for="tf-seth-link">Job listing link (optional)</label>
+        <input type="url" id="tf-seth-link" placeholder="https://...">
+        <label for="tf-seth-jd">Job description (paste the full text — the more detail, the better the result)</label>
+        <textarea id="tf-seth-jd" required placeholder="Paste the job description here..."></textarea>
+        <label for="tf-seth-notes">Anything else to emphasise? (optional)</label>
+        <textarea id="tf-seth-notes" style="min-height:60px;" placeholder="e.g. 'focus on the land agency experience, not grounds'"></textarea>
+        <button type="submit" id="tf-seth-submit">Tailor CV</button>
+      </form>
+      <div class="tailor-status" id="tf-seth-status"></div>
+      <div class="tailor-result" id="tf-seth-result"></div>
+      <button class="tailor-copy-btn" id="tf-seth-copy" onclick="copyTailorResult('seth')">Copy to clipboard</button>
+    </section>
+
+    <section>
+      <h2>Live opportunities spotted today</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag">Rural Land Agency</span>
+          <h3>Fisher German — Rural Consultancy, Ashby-de-la-Zouch</h3>
+          <div class="meta">Ashby-de-la-Zouch, Leicestershire · ~10 min from Shepshed</div>
+          <p>National chartered surveyors with a rural consultancy arm literally on his doorstep. Check current vacancies — his Agricultural Liaison Officer background is a strong fit for their rural/utilities teams.</p>
+          <a class="btn" href="https://www.fishergerman.co.uk/careers/join-our-team/job-opportunities" target="_blank">View current vacancies →</a>
+        </div>
+        <div class="card">
+          <span class="tag">Rural Land Agency</span>
+          <h3>RICS Recruit — Estates Management, East Midlands</h3>
+          <div class="meta">East Midlands region · Live search feed</div>
+          <p>RICS's own job board filtered to Estates Management roles in the East Midlands region — currently thin, but worth checking regularly as it updates.</p>
+          <a class="btn" href="https://www.ricsrecruit.com/jobs/estates-management/east-midlands-region/" target="_blank">View listings →</a>
+        </div>
+      </div>
+      <p class="note" style="margin-top:14px;">These were live as of today's search. Genuinely local, currently-open vacancies are naturally scarce for this niche within a tight radius day-to-day — the section below on estates worth a direct approach is likely to be more productive than waiting for online postings.</p>
+    </section>
+
+    <section>
+      <h2>Estates worth a direct approach (Nottingham–Derby–Leicester triangle)</h2>
+      <p class="note" style="margin-bottom:14px;">Sporting estate and grounds roles are very often filled by direct CV/email rather than online adverts (JM Osborne's own listings say as much). These are known estates within roughly 45 minutes of Shepshed — worth registering interest with directly even with no advertised vacancy.</p>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag">Estate · Shoot</span>
+          <h3>Belvoir Castle</h3>
+          <div class="meta">Near Grantham, Leicestershire/Lincolnshire border</div>
+          <p>Well-known Leicestershire estate with an established shoot and large grounds/gardens operation.</p>
+          <a class="btn" href="https://www.belvoircastle.com/about/careers" target="_blank">Careers page →</a>
+        </div>
+        <div class="card">
+          <span class="tag">Estate · Grounds</span>
+          <h3>Chatsworth</h3>
+          <div class="meta">Derbyshire</div>
+          <p>Major Derbyshire estate with an extensive gardens/grounds team — a bit further out but a well-regarded employer to have on file.</p>
+          <a class="btn" href="https://uk.indeed.com/cmp/Chatsworth-House-Trust" target="_blank">Search vacancies →</a>
+        </div>
+        <div class="card">
+          <span class="tag">Estate · National Trust</span>
+          <h3>Calke Abbey &amp; Kedleston Hall</h3>
+          <div class="meta">South Derbyshire</div>
+          <p>National Trust properties within the triangle with active gardens/parks teams — apply via National Trust Jobs (linked below).</p>
+          <a class="btn" href="https://www.nationaltrustjobs.org.uk/jobs/" target="_blank">Search vacancies →</a>
+        </div>
+        <div class="card">
+          <span class="tag">Estate · Local</span>
+          <h3>Garendon &amp; Prestwold Estates</h3>
+          <div class="meta">Loughborough, Leicestershire · Very close to Shepshed</div>
+          <p>Local Leicestershire estates worth a speculative approach given proximity — no centralised careers page, contact directly.</p>
+          <a class="btn" href="https://uk.indeed.com/q-estate-groundsman-l-leicestershire-jobs.html" target="_blank">Search Leicestershire vacancies →</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Career pages &amp; recruiters to watch directly</h2>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Sporting &amp; rural recruitment specialists</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://jmosborne.co.uk/situations-vacant/" target="_blank">JM Osborne Rural &amp; Sporting<span class="domain">jmosborne.co.uk</span></a>
+        <a href="https://www.shootinguk.co.uk/classified/recruitment/" target="_blank">Shooting UK — Recruitment<span class="domain">shootinguk.co.uk</span></a>
+        <a href="https://shoothub.gunsonpegs.com/classifieds/jobs/available" target="_blank">GunsOnPegs Classifieds<span class="domain">shoothub.gunsonpegs.com</span></a>
+        <a href="https://www.countryside-jobs.com/wildlife-work/" target="_blank">Countryside Jobs Service (CJS)<span class="domain">countryside-jobs.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Industry bodies</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.nationalgamekeepers.org.uk/about-gamekeeping/gamekeeping-jobs" target="_blank">National Gamekeepers' Organisation<span class="domain">nationalgamekeepers.org.uk</span></a>
+        <a href="https://www.gwct.org.uk/about/careers/" target="_blank">Game &amp; Wildlife Conservation Trust<span class="domain">gwct.org.uk</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Grounds &amp; estate roles (heritage properties)</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.nationaltrustjobs.org.uk/where-you-could-work/gardens-and-parks" target="_blank">National Trust Jobs — Gardens &amp; Parks<span class="domain">nationaltrustjobs.org.uk</span></a>
+        <a href="https://www.english-heritage.org.uk/about/our-people/careers-with-us/" target="_blank">English Heritage Careers<span class="domain">english-heritage.org.uk</span></a>
+        <a href="https://www.greycoatlumleys.co.uk/jobs/groundskeeper" target="_blank">Greycoat Lumleys — Groundskeeper (private estates)<span class="domain">greycoatlumleys.co.uk</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Rural land agency &amp; landowner liaison (East Midlands)</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.fishergerman.co.uk/careers/join-our-team/job-opportunities" target="_blank">Fisher German — Vacancies (Ashby-de-la-Zouch HQ)<span class="domain">fishergerman.co.uk</span></a>
+        <a href="https://www.ricsrecruit.com/jobs/estates-management/east-midlands-region/" target="_blank">RICS Recruit — Estates Management, East Midlands<span class="domain">ricsrecruit.com</span></a>
+        <a href="https://webstersrural.co.uk/jobs" target="_blank">Websters Rural — Jobs (ALO, Estate Manager, Agronomy)<span class="domain">webstersrural.co.uk</span></a>
+        <a href="https://careers.savills.com/" target="_blank">Savills Careers — Rural &amp; Projects<span class="domain">careers.savills.com</span></a>
+        <a href="https://uk.indeed.com/q-rural-practice-surveyor-jobs.html" target="_blank">Indeed UK — Rural Practice Surveyor<span class="domain">uk.indeed.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Agronomy</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.hutchinsons.co.uk/about-us/careers/" target="_blank">Hutchinsons Careers<span class="domain">hutchinsons.co.uk</span></a>
+        <a href="https://www.agrii.co.uk/careers/trainee-agronomists/" target="_blank">Agrii — Trainee Agronomists<span class="domain">agrii.co.uk</span></a>
+        <a href="https://www.procam.co.uk/vacancies/" target="_blank">ProCam — Vacancies<span class="domain">procam.co.uk</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">General job boards — filtered to Nottingham / Derby / Leicester</h3>
+      <div class="link-list">
+        <a href="https://www.jobsite.co.uk/jobs/groundsman/in-nottingham" target="_blank">Jobsite — Groundsman, Nottingham<span class="domain">jobsite.co.uk</span></a>
+        <a href="https://www.jobsite.co.uk/jobs/groundsman/in-leicester" target="_blank">Jobsite — Groundsman, Leicester<span class="domain">jobsite.co.uk</span></a>
+        <a href="https://uk.indeed.com/q-estate-groundsman-l-leicestershire-jobs.html" target="_blank">Indeed UK — Estate Groundsman, Leicestershire<span class="domain">uk.indeed.com</span></a>
+        <a href="https://www.reed.co.uk/jobs/grounds-maintenance-jobs-in-east-midlands" target="_blank">Reed — Grounds Maintenance, East Midlands<span class="domain">reed.co.uk</span></a>
+        <a href="https://www.careerstructure.com/jobs/groundskeeper/in-east-midlands" target="_blank">CareerStructure — Groundskeeper, East Midlands<span class="domain">careerstructure.com</span></a>
+      </div>
+    </section>
+
+    <section>
+      <p class="note">This page refreshes daily — it re-scans the recruiters, estates and job boards above for new grounds/shoot management, rural land agency, and agronomy openings within roughly 45 minutes of Shepshed, and updates the "live opportunities" list. Roles outside the Nottingham–Derby–Leicester triangle are excluded unless exceptional.</p>
+    </section>
+  </div>
+
+</div>
+
+<script>
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('tab-btn-' + name).classList.add('active');
+  }
+
+  async function submitTailorForm(e, who) {
+    e.preventDefault();
+    var id = function(suffix) { return document.getElementById('tf-' + who + '-' + suffix); };
+    var statusEl = id('status');
+    var resultEl = id('result');
+    var copyBtn = id('copy');
+    var submitBtn = id('submit');
+    var jd = id('jd').value.trim();
+
+    resultEl.style.display = 'none';
+    copyBtn.style.display = 'none';
+    statusEl.className = 'tailor-status';
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Tailoring CV… this usually takes 5-15 seconds.';
+    submitBtn.disabled = true;
+
+    try {
+      var resp = await fetch('/.netlify/functions/tailor-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person: who,
+          role: id('role').value.trim(),
+          company: id('company').value.trim(),
+          jobDescription: jd,
+          notes: id('notes').value.trim()
+        })
+      });
+      var data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || 'Something went wrong');
+      }
+      statusEl.style.display = 'none';
+      resultEl.textContent = data.cv;
+      resultEl.style.display = 'block';
+      copyBtn.style.display = 'inline-block';
+    } catch (err) {
+      statusEl.className = 'tailor-status error';
+      statusEl.textContent = 'Error: ' + err.message;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function copyTailorResult(who) {
+    var text = document.getElementById('tf-' + who + '-result').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = document.getElementById('tf-' + who + '-copy');
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = original; }, 1500);
+    });
+  }
+</script>
+
+</body>
+</html>
