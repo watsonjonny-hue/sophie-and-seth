@@ -1,17 +1,26 @@
-<!DOCTYPE html>
+<!DOCTYPE html><script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Fashion Job Tracker",
+  "schemaVersion": 1
+}
+</script>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#faf9f7">
 <title>Job Tracker</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     background: #faf9f7;
     color: #2b2620;
     padding: 0 0 64px;
+    overflow-x: hidden;
   }
   .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
   .tabbar {
@@ -79,8 +88,32 @@
     border: 1px solid #eae4d6;
     border-radius: 10px;
     padding: 16px 18px;
+    position: relative;
   }
-  .card h3 { font-size: 15px; margin: 0 0 4px; }
+  .card.is-new {
+    border-color: #d99a4e;
+    background: #fffaf3;
+    box-shadow: 0 0 0 1px #d99a4e inset;
+  }
+  .panel-seth .card.is-new {
+    border-color: #7fa66b;
+    background: #f6fbf1;
+    box-shadow: 0 0 0 1px #7fa66b inset;
+  }
+  .new-badge {
+    position: absolute;
+    top: -9px;
+    right: 14px;
+    background: #d64545;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .card h3 { font-size: 15px; margin: 0 0 4px; padding-right: 54px; }
   .card .meta { font-size: 12.5px; color: #8a8172; margin-bottom: 8px; }
   .card p { font-size: 13.5px; color: #4a443b; margin: 0 0 10px; line-height: 1.45; }
   .card a.btn {
@@ -189,6 +222,139 @@
     cursor: pointer;
     display: none;
   }
+
+  /* ================= BOOKMARK / ARCHIVE ================= */
+  .card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+  }
+  .icon-btn {
+    width: 25px;
+    height: 25px;
+    border-radius: 6px;
+    border: 1px solid #eae4d6;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #a39a89;
+    padding: 0;
+    line-height: 1;
+  }
+  .icon-btn:hover { background: #f6ede0; color: #8a5a2b; border-color: #d9c7a8; }
+  .panel-seth .icon-btn:hover { background: #eef4e9; color: #3f6b3f; border-color: #c3d6b8; }
+  .icon-btn.bookmark-btn.active { background: #fdf1dd; color: #c8811e; border-color: #d99a4e; }
+  .panel-seth .icon-btn.bookmark-btn.active { background: #eaf3e3; color: #4d7c3f; border-color: #7fa66b; }
+  .icon-btn.archive-btn:hover { color: #a3312a; border-color: #e3b7b0; }
+
+  .card.is-bookmarked {
+    border-color: #d99a4e;
+    background: #fffaf3;
+    box-shadow: 0 0 0 1px #d99a4e inset;
+  }
+  .panel-seth .card.is-bookmarked {
+    border-color: #7fa66b;
+    background: #f6fbf1;
+    box-shadow: 0 0 0 1px #7fa66b inset;
+  }
+  .card.is-archived-hidden { display: none !important; }
+
+  .archive-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #6b5f3f;
+    background: #f1ece1;
+    border: 1px solid #e7ddc7;
+    border-radius: 20px;
+    padding: 5px 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .archive-toggle-btn:hover { background: #ece4d3; }
+  .panel-seth .archive-toggle-btn { color: #3f6b3f; background: #eef4e9; border-color: #d7e6cd; }
+  .panel-seth .archive-toggle-btn:hover { background: #e3efd9; }
+
+  .archive-panel {
+    display: none;
+    margin-top: 16px;
+    border: 1px dashed #d9c7a8;
+    border-radius: 10px;
+    padding: 16px 18px;
+    background: #fdfcf9;
+  }
+  .panel-seth .archive-panel { border-color: #c3d6b8; }
+  .archive-panel.open { display: block; }
+  .archive-panel h4 { margin: 0 0 12px; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; color: #8a8172; }
+  .archive-empty { font-size: 13px; color: #a39a89; font-style: italic; margin: 0; }
+  .archived-item {
+    background: #fff;
+    border: 1px solid #eae4d6;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .archived-item:last-child { margin-bottom: 0; }
+  .archived-item h3 { font-size: 14px; margin: 2px 0 4px; padding-right: 0; }
+  .archived-item .meta { margin-bottom: 6px; }
+  .archived-item p { margin: 0 0 10px; }
+  .archived-item-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .restore-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8a5a2b;
+    background: #fff;
+    border: 1px solid #d9c7a8;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .restore-btn:hover { background: #f6ede0; }
+  .panel-seth .restore-btn { color: #3f6b3f; border-color: #c3d6b8; }
+  .panel-seth .restore-btn:hover { background: #eef4e9; }
+
+  /* ================= MOBILE ================= */
+  @media (max-width: 640px) {
+    .wrap { padding: 0 16px; }
+    .tabbar-inner { padding: 8px 10px 0; gap: 6px; }
+    .tab-btn {
+      flex: 1 1 0;
+      font-size: 12.5px;
+      line-height: 1.25;
+      padding: 10px 8px;
+      text-align: center;
+      min-height: 44px;
+    }
+    header { margin: 20px 0; }
+    h1 { font-size: 21px; }
+    .sub { font-size: 13.5px; }
+    .updated { font-size: 12px; }
+    h2 { font-size: 13px; }
+    .card { padding: 14px 16px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .tailor-form .row { flex-direction: column; gap: 0; }
+    .tailor-form .row > div { flex: 1 1 100%; }
+    .tailor-form input[type="text"],
+    .tailor-form input[type="url"],
+    .tailor-form textarea { font-size: 15px; padding: 10px 12px; }
+    .card a.btn { padding: 9px 14px; min-height: 38px; display: inline-flex; align-items: center; }
+    .link-list a { padding: 10px 14px; }
+    .tailor-form button { width: 100%; padding: 13px 22px; min-height: 46px; }
+    .tailor-copy-btn { width: 100%; padding: 10px 12px; }
+    .archive-toggle-btn { width: 100%; justify-content: center; margin-left: 0; }
+  }
 </style>
 </head>
 <body>
@@ -207,7 +373,15 @@
     <header>
       <h1>Fashion &amp; Retail Job Tracker — Sophie</h1>
       <div class="sub">Broad sweep across fashion, retail, PR and marketing — buying, brand marketing, showroom, styling/content, e-commerce, retail management and more. UK, Europe &amp; international. Casting a wide net deliberately — Ella's better placed than a filter to judge what's appealing.</div>
-      <div class="updated">Last updated: 26 July 2026</div>
+      <div class="updated">Last updated: 7 August 2026</div>
+      <button type="button" class="archive-toggle-btn" id="archive-toggle-sophie" onclick="toggleArchivePanel('sophie')">
+        <svg viewBox="0 0 24 24" width="13" height="13"><rect x="3.2" y="4.2" width="17.6" height="3.6" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.6 8.4h14.8v9.8a1.3 1.3 0 0 1-1.3 1.3H5.9a1.3 1.3 0 0 1-1.3-1.3V8.4z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 12.2h4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        Archived (<span id="archive-count-sophie">0</span>)
+      </button>
+      <div class="archive-panel" id="archive-panel-sophie">
+        <h4>Archived jobs — Sophie</h4>
+        <div id="archive-list-sophie"><p class="archive-empty">No archived jobs yet — jobs you archive will collect here, and you can restore them any time.</p></div>
+      </div>
     </header>
 
     <section>
@@ -215,7 +389,7 @@
       <div class="card" style="max-width:640px;">
         <p style="margin-bottom:8px;"><strong>BA Fashion Marketing, First Class Honours</strong> — Leeds Beckett University (2023–2026)</p>
         <p style="margin-bottom:8px;">Relevant experience: <strong>Fashion Week PR Intern</strong> at Lobby PR, London (runway show support, press releases, front of house) and a Paris market-week internship at Arddun Agency. Also Student &amp; Course Ambassador at Leeds Beckett.</p>
-        <p style="margin:0;">Focus areas: broad — <strong>buying/merchandising</strong>, <strong>PR &amp; brand marketing</strong> (in-house and agency), <strong>showroom</strong>, styling/content, e-commerce and retail management. Deliberately not pre-filtered to "entry-level only" or a narrow category list — better to surface a wide range and let her pick what's appealing.</p>
+        <p style="margin:0;">Focus areas: broad — <strong>buying/merchandising</strong>, <strong>PR &amp; brand marketing</strong> (in-house and agency), <strong>showroom</strong>, styling/content, e-commerce and retail management. Deliberately not pre-filtered to "entry-level only" or a narrow category list — better to surface a wide range and let her pick what's appealing. <strong>Internships and placements are weighted first</strong> — statistically her strongest route in right now — with graduate/junior roles included alongside for breadth.</p>
       </div>
     </section>
 
@@ -248,37 +422,57 @@
 
     <section>
       <h2>Live opportunities spotted today</h2>
-      <div class="card-grid">
+      <div class="card-grid" id="grid-sophie-live">
         <div class="card">
-          <span class="tag">Buying · Luxury Retail</span>
-          <h3>Harrods — Buying Assistant (various departments)</h3>
-          <div class="meta">London, UK · Entry level</div>
-          <p>Buying Assistant across departments incl. Arcade &amp; Seasonal, Furniture, Fine Watches — supports product selection, trend analysis, order management.</p>
-          <a class="btn" href="https://www.fashionworkie.com/job/buying-assistant-various-departments-0" target="_blank">View listing →</a>
+          <span class="tag">Internship · Buying/Showroom · Luxury</span>
+          <h3>Ralph Lauren — Wholesale Showroom Intern</h3>
+          <div class="meta">Central London · Full time · £12.71/hr · 7 Sep–30 Oct</div>
+          <p>Hands-on wholesale showroom exposure — buying, selling, visual merchandising, sample prep and market appointments at a major luxury lifestyle brand. Re-verified live today directly on Fashion Workie — but the deadline is today (7 August) and the ad shows as expiring within hours, so this one needs an application immediately if it's of interest.</p>
+          <a class="btn" href="https://www.fashionworkie.com/internship-placement/wholesale-showroom-intern" target="_blank">View listing →</a>
         </div>
         <div class="card">
-          <span class="tag">Brand Marketing · Beauty/Fashion</span>
-          <h3>L'Oréal — Marketing Management Trainee Programme</h3>
-          <div class="meta">White City, London · 18 months · ~£35,000</div>
-          <p>Rotational graduate trainee scheme for final-year students (2026 grads) or recent graduates within 2 years. Starts July 2026 or Jan 2027.</p>
-          <a class="btn" href="https://uk.prosple.com/fashion-marketing-graduate-jobs-uk" target="_blank">Find via Prosple →</a>
+          <span class="tag">Internship · PR/Agency</span>
+          <h3>Karla Otto — Stage / Press Assistant Intern</h3>
+          <div class="meta">Paris (Vaugirard) · 6-month stage starting September · Fluent English &amp; French required</div>
+          <p>Press internship on a fashion PR team at a top global agency (clients across fashion, beauty, lifestyle) — tracking press activity, coordinating press samples/returns, coverage reporting and event support. Good fit for the Paris market-week/PR background, but note it explicitly requires fluent French, not just English. Re-verified live today directly on Karla Otto's own jobs page — the agency corrected a small typo in its own URL slug since the last check, so the link below has been updated to match.</p>
+          <a class="btn" href="https://careers.karlaotto.com/jobs/8072473-stage-assistant-e-presse" target="_blank">View listing →</a>
+        </div>
+        <div class="card is-new">
+          <span class="new-badge">NEW</span>
+          <span class="tag">Internship · PR/Agency</span>
+          <h3>Limitée PR — Social Media &amp; PR Intern</h3>
+          <div class="meta">Hackney Central, East London · Part time, 8 hrs/week · £13.00/hr · 6–12 months · Ongoing deadline</div>
+          <p>Boutique international fashion PR agency looking for a Social Media &amp; PR Intern — showroom support and sample management, press clipping, VIP dressing/loaning, social media support and journalist/influencer research. Direct crossover with the showroom and PR experience from Lobby PR and Arddun Agency. Confirmed live today directly on Fashion Workie, with an ongoing rolling deadline.</p>
+          <a class="btn" href="https://www.fashionworkie.com/internship-placement/social-media-pr-intern-1" target="_blank">View listing →</a>
         </div>
         <div class="card">
-          <span class="tag">PR · Beauty/Fashion</span>
-          <h3>Coty — PR &amp; Communications Intern</h3>
-          <div class="meta">London SW19 · 13-month internship · Starts July 2026</div>
-          <p>PR &amp; Communications internship at global beauty group Coty (Gucci, Chloé, Calvin Klein, Burberry fragrance licences, Marc Jacobs, Rimmel).</p>
-          <a class="btn" href="https://careers.coty.com/job/London-PR-and-Communications-Intern-LND-SW19-4DR/1374702433/" target="_blank">View listing →</a>
-        </div>
-        <div class="card">
-          <span class="tag">PR/Marketing · Luxury Brand</span>
-          <h3>AADNEVIK — Junior PR &amp; Marketing Position</h3>
-          <div class="meta">Greater London · Full time, immediate start</div>
-          <p>Junior PR/Marketing role at independent luxury womenswear label — press &amp; media relations, celebrity/stylist outreach, social monitoring.</p>
-          <a class="btn" href="https://www.fashionworkie.com/job/pr-marketing-junior" target="_blank">View listing →</a>
+          <span class="tag">Styling/Content · Social Media</span>
+          <h3>AllSaints — Social Media Content Creator and Editor</h3>
+          <div class="meta">Shoreditch, London · Permanent · Hybrid · Closes 25 Aug 2026</div>
+          <p>Shoots and edits AllSaints' Instagram content — behind-the-scenes, product shoots, events. Worth flagging honestly: it asks for "advanced" camera/Adobe Creative Suite skills, closer to a portfolio-based hire than a straight marketing grad role, but it's a live, genuine listing in the styling/content space so worth her own judgement call. Re-verified live today directly on AllSaints' own careers page.</p>
+          <a class="btn" href="https://careers.allsaints.com/job/3762768/Social-Media-Content-Creator-and-Editor-job-in-London-UK" target="_blank">View listing →</a>
         </div>
       </div>
-      <p class="note" style="margin-top:14px;">These were live as of today's search — always confirm the listing is still open before applying.</p>
+      <p class="note" style="margin-top:14px;">Comprehensive re-verification pass completed today (7 August): every card carried over from the last update was re-checked with a live fetch of the actual listing page, not just a search snippet, and a fresh internship-first sweep was run across Fashion Workie, Drapers Jobs, BoF Careers, FashionUnited, The Dots, Karla Otto, Purple/Together Group, KCD, BPCM, SEEN Group, Fuel PR, Imagination PR, Richemont, Harvey Nichols, Harrods, AllSaints, Anthropologie, Space NK, Reiss, I.DEA PR, Fabric PR, The Lobby, 16Arlington, Victoria Beckham Beauty and CELINE UK (LVMH), among others. Result: three of the four cards shown carry over unchanged (Karla Otto, AllSaints, and Ralph Lauren — though Ralph Lauren's deadline is today), plus one genuinely new, verified-live find: Limitée PR's Social Media &amp; PR Intern. A lot dropped out this run, which is exactly the staleness problem this process is meant to catch: ANCC Studio's Marketing Intern (Social) is no longer on the studio's own current-openings page; every individual Purple/Together Group posting checked (the two shown previously, plus a newly-found replacement listing) redirected to the generic careers homepage on a direct fetch today — a closed/removed signal — despite still surfacing in search; Richemont's Internal Communications &amp; Events Intern no longer appears in Richemont's own live feed of 1,332+ roles; Harvey Nichols' Buying Administrator (Womenswear FTC) has likewise dropped off Harvey Nichols' own current 29-job list; and Harrods' Buying Assistant (Childrenswear Superbrands) is explicitly marked "Applications for this job are now closed" on Bright Network. Also checked and rejected as expired or stale despite promising search snippets: Space NK's Marketing Graduate Scheme, Reiss's Social &amp; PR Placement, I.DEA PR's and Fabric PR's PR Intern roles, The Lobby's Showroom/LFW Intern (a 2025 posting), 16Arlington's Paris Showroom Intern (was for March 2026, now lapsed), KCD's London PR Work Placement (a 2019 listing still indexed), Anthropologie's Brand Marketing Work Placement, and Victoria Beckham Beauty's PR Intern — a 2024 listing with a June 2024 expiry date still turning up in search, a textbook case of the exact problem this verification step exists to catch. Harvey Nichols' Merchandiser - Cosmetics and Fragrance is genuinely live but explicitly requires "5+ years' experience in Merchandising," so it's noted rather than added. SEEN Group's Beauty PR Intern link 404'd on Workable; Fuel PR's and CELINE UK's (LVMH) listings on WIZBII and The Dots returned empty, JS-rendered shells with no readable content — unverifiable rather than confirmed dead, so left off rather than guessed at; and Imagination PR's Beauty PR Internship showed only an ambiguous "expires soon" flag with no clear date, dropped for the same reason. BPCM's and SEEN Group's own Workable-hosted career pages are JS-rendered and returned no readable job listings to a direct fetch — flagged as unverifiable-by-this-method for future runs, the same treatment already given to Dior and NEXT. Selfridges remains login-walled and needs a manual check.</p>
+    </section>
+
+    <section>
+      <h2>PR &amp; showroom agencies worth a direct approach</h2>
+      <p class="note" style="margin-bottom:14px;">These agencies hire constantly for PR, showroom and marketing support but often fill roles via direct approach or word-of-mouth rather than advertising — worth sending a speculative CV/email even with no live vacancy listed.</p>
+      <div class="card-grid" id="grid-sophie-agencies">
+        <div class="card"><span class="tag">PR/Showroom Agency</span><h3>Karla Otto</h3><div class="meta">London (global network)</div><p>Fashion &amp; luxury PR/marketing agency — matches her Lobby PR experience closely.</p><a class="btn" href="https://careers.karlaotto.com/jobs" target="_blank">Careers page →</a></div>
+        <div class="card"><span class="tag">PR/Showroom Agency</span><h3>KCD</h3><div class="meta">London (global network)</div><p>Major fashion PR &amp; production agency running international show/market weeks — showroom &amp; PR crossover.</p><a class="btn" href="https://www.kcdworldwide.com/" target="_blank">Company site →</a></div>
+        <div class="card"><span class="tag">PR Agency</span><h3>Purple (now branded under Together Group)</h3><div class="meta">London (global network)</div><p>Global lifestyle communications agency — beauty, fashion, lifestyle &amp; entertainment PR. Its jobs board is a Teamtailor/Pinpoint single-page app — individual posting links can go stale fast even while the agency is actively hiring, so treat the live board itself as the source of truth rather than any specific saved link.</p><a class="btn" href="https://togethergroup.pinpointhq.com/" target="_blank">Live jobs board →</a></div>
+        <div class="card"><span class="tag">PR/Agency</span><h3>Limitée PR</h3><div class="meta">Hackney Central, East London</div><p>Boutique international fashion PR agency — showroom, sample management, social media and press support. Currently has a live, ongoing internship (see above) with a rolling deadline.</p><a class="btn" href="http://www.limiteepr.com" target="_blank">Company site →</a></div>
+        <div class="card"><span class="tag">PR Agency · Luxury</span><h3>The Communications Store</h3><div class="meta">London</div><p>Strategic luxury PR agency (fashion, beauty, travel, lifestyle) — runs a funded internship programme.</p><a class="btn" href="https://www.linkedin.com/company/the-communications-store" target="_blank">LinkedIn →</a></div>
+        <div class="card"><span class="tag">PR/Advertising Agency</span><h3>Exposure</h3><div class="meta">London</div><p>Award-winning PR, digital &amp; experiential agency working across fashion/lifestyle brands.</p><a class="btn" href="https://www.exposure.net/london/work" target="_blank">Careers page →</a></div>
+        <div class="card"><span class="tag">PR Agency</span><h3>BPCM</h3><div class="meta">London, NY &amp; LA</div><p>Fashion, beauty &amp; lifestyle PR agency — runs seasonal internship programmes. Its careers page is hosted on Workable and is JS-rendered — no readable listings via direct fetch, so check the live page manually.</p><a class="btn" href="https://www.bpcm.com/careers" target="_blank">Careers page →</a></div>
+        <div class="card"><span class="tag">Creative/Brand Agency</span><h3>ScienceMagic</h3><div class="meta">London &amp; NY</div><p>B Corp-certified creative &amp; strategy agency working with talent, brands and purpose-driven campaigns.</p><a class="btn" href="https://www.sciencemagic.com/" target="_blank">Company site →</a></div>
+        <div class="card"><span class="tag">Beauty PR Agency</span><h3>Seen Group</h3><div class="meta">London &amp; NY</div><p>Beauty-specialist PR/comms agency — runs a graduate scheme and internships. Also Workable-hosted and JS-rendered — a specific beauty PR intern posting found this run had already been taken down, so check the live page directly rather than relying on a saved link.</p><a class="btn" href="https://www.seengroup.com/careers/" target="_blank">Careers page →</a></div>
+        <div class="card"><span class="tag">PR/Comms Agency</span><h3>Mission</h3><div class="meta">London</div><p>Brand communications agency — PR, events, partnerships &amp; influencer.</p><a class="btn" href="https://missionagency.com/careers/" target="_blank">Careers page →</a></div>
+        <div class="card"><span class="tag">Influencer/Marketing Agency</span><h3>Village Marketing</h3><div class="meta">Primarily US — check for UK/remote roles</div><p>Influencer marketing agency — worth checking for UK or remote-friendly openings.</p><a class="btn" href="https://www.indeed.com/cmp/Village-Marketing" target="_blank">Search vacancies →</a></div>
+        <div class="card"><span class="tag">Creative Agency</span><h3>Mother London</h3><div class="meta">London (Shoreditch)</div><p>Well-known creative/advertising agency. Runs a paid 1-3 month Design Placement programme (more design/art-direction focused than PR, but worth knowing about) — apply by emailing a portfolio and CV directly.</p><a class="btn" href="https://www.motherlondon.com/work" target="_blank">Careers page →</a></div>
+      </div>
     </section>
 
     <section>
@@ -294,6 +488,10 @@
         <a href="https://careers.riverisland.com/" target="_blank">River Island<span class="domain">careers.riverisland.com</span></a>
         <a href="https://careers.superdry.com/" target="_blank">Superdry<span class="domain">careers.superdry.com</span></a>
         <a href="https://www.newlookgroup.com/careers" target="_blank">New Look<span class="domain">newlookgroup.com/careers</span></a>
+        <a href="https://careers.next.co.uk/jobs" target="_blank">NEXT (JS-rendered — check manually)<span class="domain">careers.next.co.uk</span></a>
+        <a href="https://careers.lululemon.com/en_US/careers/SearchCareer" target="_blank">Lululemon<span class="domain">careers.lululemon.com</span></a>
+        <a href="https://www.aloyoga.com/en-gb/pages/careers" target="_blank">Alo Yoga<span class="domain">aloyoga.com/careers</span></a>
+        <a href="https://careers.harveynichols.com/jobs" target="_blank">Harvey Nichols<span class="domain">careers.harveynichols.com</span></a>
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Contemporary &amp; premium British brands</h3>
       <div class="link-list" style="margin-bottom:18px;">
@@ -305,10 +503,13 @@
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Department stores &amp; luxury</h3>
       <div class="link-list" style="margin-bottom:18px;">
-        <a href="https://www.selfridges.com/GB/en/info/careers/" target="_blank">Selfridges<span class="domain">selfridges.com/careers</span></a>
+        <a href="https://jobsearch.selfridges.com/" target="_blank">Selfridges (needs login to browse — worth a manual check)<span class="domain">jobsearch.selfridges.com</span></a>
         <a href="https://www.jlpjobs.com/" target="_blank">John Lewis Partnership<span class="domain">jlpjobs.com</span></a>
         <a href="https://www.lvmh.com/join-us/our-job-offers" target="_blank">LVMH<span class="domain">lvmh.com/join-us</span></a>
         <a href="https://www.harrods.com/en-gb/careers" target="_blank">Harrods<span class="domain">harrods.com/careers</span></a>
+        <a href="https://www.dior.com/carrieres/index.html?languageSelect=EN" target="_blank">Dior (JS-rendered — listings not fetchable directly)<span class="domain">dior.com/carrieres</span></a>
+        <a href="https://careers.richemont.com/en/jobs/" target="_blank">Richemont — Cartier, Montblanc, Van Cleef &amp; more<span class="domain">careers.richemont.com</span></a>
+        <a href="https://www.kering.com/en/talent/job-offers/" target="_blank">Kering — Gucci, Saint Laurent, Balenciaga &amp; more<span class="domain">kering.com/talent</span></a>
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Online-only &amp; marketplace retailers</h3>
       <div class="link-list" style="margin-bottom:18px;">
@@ -319,11 +520,15 @@
         <a href="https://www.businessoffashion.com/careers/jobs/" target="_blank">BoF Careers — All<span class="domain">businessoffashion.com</span></a>
         <a href="https://www.fashionworkie.com" target="_blank">FashionWorkie<span class="domain">fashionworkie.com</span></a>
         <a href="https://www.drapersjobs.com/jobs/buyer" target="_blank">Drapers Jobs — Buyer<span class="domain">drapersjobs.com</span></a>
+        <a href="https://www.drapersjobs.com/jobs" target="_blank">Drapers Jobs — All<span class="domain">drapersjobs.com</span></a>
+        <a href="https://fashionunited.uk/fashion-jobs/in/london" target="_blank">FashionUnited — Fashion Jobs, London<span class="domain">fashionunited.uk</span></a>
+        <a href="https://the-dots.com/jobs/search/fashion-internships" target="_blank">The Dots — Fashion Internships, London<span class="domain">the-dots.com</span></a>
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">PR &amp; marketing agencies (matches her Lobby PR experience)</h3>
       <div class="link-list" style="margin-bottom:18px;">
         <a href="https://careers.karlaotto.com/jobs" target="_blank">Karla Otto<span class="domain">careers.karlaotto.com</span></a>
         <a href="https://www.kcdworldwide.com/" target="_blank">KCD<span class="domain">kcdworldwide.com</span></a>
+        <a href="http://www.limiteepr.com" target="_blank">Limitée PR<span class="domain">limiteepr.com</span></a>
         <a href="https://www.indeed.com/cmp/Villa-Eugenie-1" target="_blank">Villa Eugénie<span class="domain">via Indeed</span></a>
         <a href="https://www.businessoffashion.com/careers/jobs/pr-and-communications/permanent/" target="_blank">BoF Careers — PR &amp; Comms<span class="domain">businessoffashion.com</span></a>
         <a href="https://detaillondon.com/jobs/" target="_blank">Detail London (fashion/beauty PR recruiter)<span class="domain">detaillondon.com</span></a>
@@ -367,7 +572,15 @@
     <header>
       <h1>Countryside &amp; Rural Careers Job Tracker — Seth</h1>
       <div class="sub">Grounds/shoot management, rural land agency, and agronomy roles — focused on the Nottingham / Derby / Leicester triangle, roughly a 45-minute drive of Shepshed (just off the M1).</div>
-      <div class="updated">Last updated: 26 July 2026</div>
+      <div class="updated">Last updated: 31 July 2026</div>
+      <button type="button" class="archive-toggle-btn" id="archive-toggle-seth" onclick="toggleArchivePanel('seth')">
+        <svg viewBox="0 0 24 24" width="13" height="13"><rect x="3.2" y="4.2" width="17.6" height="3.6" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.6 8.4h14.8v9.8a1.3 1.3 0 0 1-1.3 1.3H5.9a1.3 1.3 0 0 1-1.3-1.3V8.4z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 12.2h4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        Archived (<span id="archive-count-seth">0</span>)
+      </button>
+      <div class="archive-panel" id="archive-panel-seth">
+        <h4>Archived jobs — Seth</h4>
+        <div id="archive-list-seth"><p class="archive-empty">No archived jobs yet — jobs you archive will collect here, and you can restore them any time.</p></div>
+      </div>
     </header>
 
     <section>
@@ -407,7 +620,7 @@
 
     <section>
       <h2>Live opportunities spotted today</h2>
-      <div class="card-grid">
+      <div class="card-grid" id="grid-seth-live">
         <div class="card">
           <span class="tag">Rural Land Agency</span>
           <h3>Fisher German — Rural Consultancy, Ashby-de-la-Zouch</h3>
@@ -419,17 +632,33 @@
           <span class="tag">Rural Land Agency</span>
           <h3>RICS Recruit — Estates Management, East Midlands</h3>
           <div class="meta">East Midlands region · Live search feed</div>
-          <p>RICS's own job board filtered to Estates Management roles in the East Midlands region — currently thin, but worth checking regularly as it updates.</p>
+          <p>RICS's own job board filtered to Estates Management roles in the East Midlands region — currently thin (1 live role today), but worth checking regularly as it updates.</p>
           <a class="btn" href="https://www.ricsrecruit.com/jobs/estates-management/east-midlands-region/" target="_blank">View listings →</a>
         </div>
+        <div class="card is-new">
+          <span class="new-badge">NEW</span>
+          <span class="tag">Rural Land Agency</span>
+          <h3>Websters Rural — Agricultural Liaison Officer, Newark</h3>
+          <div class="meta">Newark, Nottinghamshire · Hybrid working</div>
+          <p>Land access liaison role for a national property consultancy's infrastructure team — a close match for his existing ALO experience managing landowner relations and pre/post-entry land condition assessments.</p>
+          <a class="btn" href="https://webstersrural.co.uk/agricultural-liaison-officer-newark" target="_blank">View listing →</a>
+        </div>
+        <div class="card is-new">
+          <span class="new-badge">NEW</span>
+          <span class="tag">Rural Land Agency</span>
+          <h3>Websters Rural — Property Manager, Market Harborough</h3>
+          <div class="meta">Market Harborough, Leicestershire · Hybrid working</div>
+          <p>Managing a portfolio of agricultural, residential and commercial rural property for a long-established consultancy — site visits, tenancy management and maintenance oversight.</p>
+          <a class="btn" href="https://webstersrural.co.uk/rural-property-management-market-harborough" target="_blank">View listing →</a>
+        </div>
       </div>
-      <p class="note" style="margin-top:14px;">These were live as of today's search. Genuinely local, currently-open vacancies are naturally scarce for this niche within a tight radius day-to-day — the section below on estates worth a direct approach is likely to be more productive than waiting for online postings.</p>
+      <p class="note" style="margin-top:14px;">Refreshed 31 July — two new Websters Rural listings added (Newark and Market Harborough, both hybrid so the commute is less of a factor). Genuinely local, currently-open vacancies remain naturally scarce for this niche within a tight radius day-to-day — the section below on estates worth a direct approach is likely to be more productive than waiting for online postings.</p>
     </section>
 
     <section>
       <h2>Estates worth a direct approach (Nottingham–Derby–Leicester triangle)</h2>
       <p class="note" style="margin-bottom:14px;">Sporting estate and grounds roles are very often filled by direct CV/email rather than online adverts (JM Osborne's own listings say as much). These are known estates within roughly 45 minutes of Shepshed — worth registering interest with directly even with no advertised vacancy.</p>
-      <div class="card-grid">
+      <div class="card-grid" id="grid-seth-estates">
         <div class="card">
           <span class="tag">Estate · Shoot</span>
           <h3>Belvoir Castle</h3>
@@ -474,6 +703,7 @@
       <div class="link-list" style="margin-bottom:18px;">
         <a href="https://www.nationalgamekeepers.org.uk/about-gamekeeping/gamekeeping-jobs" target="_blank">National Gamekeepers' Organisation<span class="domain">nationalgamekeepers.org.uk</span></a>
         <a href="https://www.gwct.org.uk/about/careers/" target="_blank">Game &amp; Wildlife Conservation Trust<span class="domain">gwct.org.uk</span></a>
+        <a href="https://basc.org.uk/" target="_blank">BASC — British Association for Shooting &amp; Conservation<span class="domain">basc.org.uk</span></a>
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Grounds &amp; estate roles (heritage properties)</h3>
       <div class="link-list" style="margin-bottom:18px;">
@@ -487,13 +717,39 @@
         <a href="https://www.ricsrecruit.com/jobs/estates-management/east-midlands-region/" target="_blank">RICS Recruit — Estates Management, East Midlands<span class="domain">ricsrecruit.com</span></a>
         <a href="https://webstersrural.co.uk/jobs" target="_blank">Websters Rural — Jobs (ALO, Estate Manager, Agronomy)<span class="domain">webstersrural.co.uk</span></a>
         <a href="https://careers.savills.com/" target="_blank">Savills Careers — Rural &amp; Projects<span class="domain">careers.savills.com</span></a>
+        <a href="https://www.struttandparker.com/careers" target="_blank">Strutt &amp; Parker — Rural Careers<span class="domain">struttandparker.com</span></a>
+        <a href="https://www.carterjonas.co.uk/property-jobs/rural-recruitment" target="_blank">Carter Jonas — Rural Recruitment<span class="domain">carterjonas.co.uk</span></a>
+        <a href="https://www.bidwells.co.uk/work-with-us/careers/" target="_blank">Bidwells — Rural Careers<span class="domain">bidwells.co.uk</span></a>
         <a href="https://uk.indeed.com/q-rural-practice-surveyor-jobs.html" target="_blank">Indeed UK — Rural Practice Surveyor<span class="domain">uk.indeed.com</span></a>
       </div>
-      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Agronomy</h3>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Forestry &amp; conservation bodies</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://www.tilhill.com/careers/" target="_blank">Tilhill Forestry — Careers<span class="domain">tilhill.com</span></a>
+        <a href="https://www.forestryengland.uk/careers" target="_blank">Forestry England — Careers<span class="domain">forestryengland.uk</span></a>
+        <a href="https://jobs.derbyshirewildlifetrust.org.uk/" target="_blank">Derbyshire Wildlife Trust — Jobs<span class="domain">derbyshirewildlifetrust.org.uk</span></a>
+        <a href="https://www.lrwt.org.uk/jobs" target="_blank">Leicestershire &amp; Rutland Wildlife Trust — Jobs<span class="domain">lrwt.org.uk</span></a>
+        <a href="https://www.nottinghamshirewildlife.org/jobs" target="_blank">Nottinghamshire Wildlife Trust — Jobs<span class="domain">nottinghamshirewildlife.org</span></a>
+        <a href="https://naturalenglandcareers.org.uk/" target="_blank">Natural England — Careers<span class="domain">naturalenglandcareers.org.uk</span></a>
+        <a href="https://environmentagencycareers.co.uk/careers/" target="_blank">Environment Agency — Careers<span class="domain">environmentagencycareers.co.uk</span></a>
+        <a href="https://canalrivertrust.org.uk/about-us/work-for-us" target="_blank">Canal &amp; River Trust — Work For Us<span class="domain">canalrivertrust.org.uk</span></a>
+        <a href="https://www.rspb.org.uk/about-the-rspb/jobs/" target="_blank">RSPB — Jobs (Reserve Warden, Field Officer)<span class="domain">rspb.org.uk</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">Agronomy &amp; agricultural contractors</h3>
       <div class="link-list" style="margin-bottom:18px;">
         <a href="https://www.hutchinsons.co.uk/about-us/careers/" target="_blank">Hutchinsons Careers<span class="domain">hutchinsons.co.uk</span></a>
         <a href="https://www.agrii.co.uk/careers/trainee-agronomists/" target="_blank">Agrii — Trainee Agronomists<span class="domain">agrii.co.uk</span></a>
         <a href="https://www.procam.co.uk/vacancies/" target="_blank">ProCam — Vacancies<span class="domain">procam.co.uk</span></a>
+        <a href="https://www.frontierag.co.uk/work-at-frontier/" target="_blank">Frontier Agriculture — Work At Frontier<span class="domain">frontierag.co.uk</span></a>
+        <a href="http://www.velcourt.co.uk/vacancies/" target="_blank">Velcourt — Vacancies (Farm Management)<span class="domain">velcourt.co.uk</span></a>
+        <a href="https://adas.co.uk/jobs/" target="_blank">ADAS — Jobs (Agri/Environmental Consultancy)<span class="domain">adas.co.uk</span></a>
+        <a href="https://www.totaljobs.com/jobs/niab" target="_blank">NIAB — Vacancies (Crop Science)<span class="domain">niab.com</span></a>
+      </div>
+      <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">General agricultural &amp; countryside job boards</h3>
+      <div class="link-list" style="margin-bottom:18px;">
+        <a href="https://jobs.fwi.co.uk/" target="_blank">Farmers Weekly Jobs<span class="domain">jobs.fwi.co.uk</span></a>
+        <a href="https://www.nfuonline.com/careers" target="_blank">NFU — Careers<span class="domain">nfuonline.com</span></a>
+        <a href="https://www.lantra.co.uk/employers/jobs-board" target="_blank">Lantra — Jobs Board<span class="domain">lantra.co.uk</span></a>
+        <a href="https://www.agrifj.co.uk/jobs" target="_blank">agriFJ — Agricultural &amp; Farming Jobs<span class="domain">agrifj.co.uk</span></a>
       </div>
       <h3 style="font-size:13px;color:#8a8172;margin:0 0 8px;">General job boards — filtered to Nottingham / Derby / Leicester</h3>
       <div class="link-list">
@@ -573,6 +829,233 @@
       setTimeout(function() { btn.textContent = original; }, 1500);
     });
   }
+</script>
+
+<script>
+  // ================= BOOKMARK / ARCHIVE (client-side, per-device via localStorage) =================
+  (function() {
+    var STORAGE_KEY = 'jobTrackerBookmarksArchive_v1';
+
+    function loadState() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { bookmarks: {}, archive: {} };
+        var parsed = JSON.parse(raw);
+        return {
+          bookmarks: parsed.bookmarks || {},
+          archive: parsed.archive || {}
+        };
+      } catch (e) {
+        return { bookmarks: {}, archive: {} };
+      }
+    }
+
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    var state = loadState();
+
+    var BOOKMARK_OUTLINE = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 3.5h12a.5.5 0 0 1 .5.5v16.2a.4.4 0 0 1-.62.33L12 16.8l-5.88 3.73A.4.4 0 0 1 5.5 20.2V4a.5.5 0 0 1 .5-.5z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+    var BOOKMARK_FILLED = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 3.5h12a.5.5 0 0 1 .5.5v16.2a.4.4 0 0 1-.62.33L12 16.8l-5.88 3.73A.4.4 0 0 1 5.5 20.2V4a.5.5 0 0 1 .5-.5z" fill="currentColor" stroke="currentColor" stroke-width="1.8"/></svg>';
+    var ARCHIVE_ICON = '<svg viewBox="0 0 24 24" width="14" height="14"><rect x="3.2" y="4.2" width="17.6" height="3.6" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.6 8.4h14.8v9.8a1.3 1.3 0 0 1-1.3 1.3H5.9a1.3 1.3 0 0 1-1.3-1.3V8.4z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 12.2h4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+    var RESTORE_ICON = '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M4 12a8 8 0 1 1 2.6 5.9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 7v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    var GRIDS = [
+      { id: 'grid-sophie-live', panel: 'sophie' },
+      { id: 'grid-sophie-agencies', panel: 'sophie' },
+      { id: 'grid-seth-live', panel: 'seth' },
+      { id: 'grid-seth-estates', panel: 'seth' }
+    ];
+
+    function textOf(card, selector) {
+      var el = card.querySelector(selector);
+      return el ? el.textContent.trim() : '';
+    }
+
+    function descOf(card) {
+      var p = card.querySelector('p');
+      return p ? p.textContent.trim() : '';
+    }
+
+    function escapeHtml(s) {
+      var d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    function escapeAttr(s) {
+      return (s || '').replace(/"/g, '&quot;');
+    }
+
+    function buildActions(card, url, gridId, panel) {
+      var wrap = document.createElement('div');
+      wrap.className = 'card-actions';
+
+      var bmBtn = document.createElement('button');
+      bmBtn.type = 'button';
+      bmBtn.className = 'icon-btn bookmark-btn';
+      bmBtn.title = 'Bookmark this job';
+      bmBtn.setAttribute('aria-label', 'Bookmark this job');
+      var isBm = !!state.bookmarks[url];
+      bmBtn.innerHTML = isBm ? BOOKMARK_FILLED : BOOKMARK_OUTLINE;
+      if (isBm) bmBtn.classList.add('active');
+      bmBtn.addEventListener('click', function() { toggleBookmark(url, card, bmBtn, gridId); });
+
+      var arBtn = document.createElement('button');
+      arBtn.type = 'button';
+      arBtn.className = 'icon-btn archive-btn';
+      arBtn.title = 'Archive this job (hide it, but keep it — restorable any time)';
+      arBtn.setAttribute('aria-label', 'Archive this job');
+      arBtn.innerHTML = ARCHIVE_ICON;
+      arBtn.addEventListener('click', function() { archiveJob(card, url, gridId, panel); });
+
+      wrap.appendChild(bmBtn);
+      wrap.appendChild(arBtn);
+      card.appendChild(wrap);
+    }
+
+    function toggleBookmark(url, card, btn, gridId) {
+      if (state.bookmarks[url]) {
+        delete state.bookmarks[url];
+        card.classList.remove('is-bookmarked');
+        btn.classList.remove('active');
+        btn.innerHTML = BOOKMARK_OUTLINE;
+      } else {
+        state.bookmarks[url] = true;
+        card.classList.add('is-bookmarked');
+        btn.classList.add('active');
+        btn.innerHTML = BOOKMARK_FILLED;
+        var grid = document.getElementById(gridId);
+        if (grid && grid.firstChild !== card) grid.insertBefore(card, grid.firstChild);
+      }
+      saveState();
+    }
+
+    function archiveJob(card, url, gridId, panel) {
+      state.archive[url] = {
+        panel: panel,
+        gridId: gridId,
+        tag: textOf(card, '.tag'),
+        title: textOf(card, 'h3'),
+        meta: textOf(card, '.meta'),
+        desc: descOf(card),
+        url: url,
+        archivedAt: new Date().toISOString()
+      };
+      delete state.bookmarks[url];
+      saveState();
+      card.classList.add('is-archived-hidden');
+      card.classList.remove('is-bookmarked');
+      renderArchive(panel);
+      updateArchiveCount(panel);
+    }
+
+    function restoreJob(url) {
+      var record = state.archive[url];
+      if (!record) return;
+      delete state.archive[url];
+      saveState();
+
+      var existing = document.querySelector('.card[data-job-url="' + url.replace(/"/g, '\\"') + '"]');
+      if (existing) {
+        existing.classList.remove('is-archived-hidden');
+      } else {
+        var grid = document.getElementById(record.gridId);
+        if (grid) {
+          var card = document.createElement('div');
+          card.className = 'card';
+          card.setAttribute('data-job-url', url);
+          card.innerHTML =
+            (record.tag ? '<span class="tag">' + escapeHtml(record.tag) + '</span>' : '') +
+            '<h3>' + escapeHtml(record.title) + '</h3>' +
+            (record.meta ? '<div class="meta">' + escapeHtml(record.meta) + '</div>' : '') +
+            (record.desc ? '<p>' + escapeHtml(record.desc) + '</p>' : '') +
+            '<a class="btn" href="' + escapeAttr(url) + '" target="_blank">View listing →</a>';
+          buildActions(card, url, record.gridId, record.panel);
+          grid.insertBefore(card, grid.firstChild);
+        }
+      }
+      renderArchive(record.panel);
+      updateArchiveCount(record.panel);
+    }
+
+    function updateArchiveCount(panel) {
+      var count = 0;
+      Object.keys(state.archive).forEach(function(u) { if (state.archive[u].panel === panel) count++; });
+      var countEl = document.getElementById('archive-count-' + panel);
+      if (countEl) countEl.textContent = count;
+    }
+
+    function renderArchive(panel) {
+      var container = document.getElementById('archive-list-' + panel);
+      if (!container) return;
+      var items = Object.keys(state.archive)
+        .map(function(u) { return state.archive[u]; })
+        .filter(function(r) { return r.panel === panel; })
+        .sort(function(a, b) { return new Date(b.archivedAt) - new Date(a.archivedAt); });
+
+      if (!items.length) {
+        container.innerHTML = '<p class="archive-empty">No archived jobs yet — jobs you archive will collect here, and you can restore them any time.</p>';
+        return;
+      }
+
+      container.innerHTML = items.map(function(r) {
+        return '<div class="archived-item">' +
+          (r.tag ? '<span class="tag">' + escapeHtml(r.tag) + '</span>' : '') +
+          '<h3>' + escapeHtml(r.title) + '</h3>' +
+          (r.meta ? '<div class="meta">' + escapeHtml(r.meta) + '</div>' : '') +
+          (r.desc ? '<p>' + escapeHtml(r.desc) + '</p>' : '') +
+          '<div class="archived-item-actions">' +
+            '<a class="btn" href="' + escapeAttr(r.url) + '" target="_blank">View listing →</a>' +
+            '<button type="button" class="restore-btn" data-restore-url="' + escapeAttr(r.url) + '">' + RESTORE_ICON + ' Restore</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      Array.prototype.forEach.call(container.querySelectorAll('[data-restore-url]'), function(btn) {
+        btn.addEventListener('click', function() { restoreJob(btn.getAttribute('data-restore-url')); });
+      });
+    }
+
+    window.toggleArchivePanel = function(panel) {
+      var el = document.getElementById('archive-panel-' + panel);
+      if (!el) return;
+      el.classList.toggle('open');
+      if (el.classList.contains('open')) renderArchive(panel);
+    };
+
+    function initGrid(gridId, panel) {
+      var grid = document.getElementById(gridId);
+      if (!grid) return;
+      var cards = Array.prototype.slice.call(grid.children).filter(function(el) { return el.classList.contains('card'); });
+      var bookmarked = [];
+      var rest = [];
+
+      cards.forEach(function(card) {
+        var link = card.querySelector('a.btn[href]');
+        if (!link) return;
+        var url = link.getAttribute('href');
+        card.setAttribute('data-job-url', url);
+
+        if (state.archive[url]) card.classList.add('is-archived-hidden');
+        if (state.bookmarks[url]) card.classList.add('is-bookmarked');
+
+        buildActions(card, url, gridId, panel);
+
+        if (state.bookmarks[url] && !state.archive[url]) bookmarked.push(card);
+        else rest.push(card);
+      });
+
+      bookmarked.concat(rest).forEach(function(card) { grid.appendChild(card); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      GRIDS.forEach(function(g) { initGrid(g.id, g.panel); });
+      updateArchiveCount('sophie');
+      updateArchiveCount('seth');
+    });
+  })();
 </script>
 
 </body>
